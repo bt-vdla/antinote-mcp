@@ -1,0 +1,23 @@
+{
+  "name": "date_note",
+  "version": "1.0.0",
+  "author": "bharat",
+  "description": "Open a new note with today's date in bold at the top",
+  "license": "MIT",
+  "category": "Date & Time",
+  "dataScope": "none",
+  "endpoints": [],
+  "requiredAPIKeys": [],
+  "commands": [
+    {
+      "name": "new_dated_note",
+      "description": "Open a new note with today's date in bold at the top.",
+      "type": "openURL"
+    },
+    {
+      "name": "date_header",
+      "description": "Replace the current line with today's date in bold.",
+      "type": "replaceLine"
+    }
+  ]
+}
