@@ -140,3 +140,7 @@ Checklist rows live in `ZCHECKLISTITEM` as character ranges into the note text. 
 - [maferland/antinote-mcp](https://github.com/maferland/antinote-mcp): the original Antinote MCP server, whose schema decoding and folder-scoped sandbox reader approach this project builds on.
 - [johnsonfung/antinote-extensions](https://github.com/johnsonfung/antinote-extensions): Antinote's extension API and docs.
 - Antinote by Chabo Makers. This project is unofficial and relies on internal database details that may change between Antinote versions.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
