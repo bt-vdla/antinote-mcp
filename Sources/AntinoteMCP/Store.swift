@@ -58,13 +58,15 @@ struct StoreError: Error, CustomStringConvertible { let description: String }
 /// connection so it always sees what Antinote last committed (including WAL data).
 final class Store {
     static let dbName = "cd-v1-notes.sqlite"
-    let dbURL: URL
+    /// Returns the granted folder, re-requesting permission if it was lost.
+    private let folder: () throws -> URL
 
-    init(folder: URL) { dbURL = folder.appendingPathComponent(Store.dbName) }
+    init(folder: @escaping () throws -> URL) { self.folder = folder }
 
     private func withDB<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
+        let path = try folder().appendingPathComponent(Store.dbName).path
         var handle: OpaquePointer?
-        guard sqlite3_open_v2(dbURL.path, &handle, SQLITE_OPEN_READONLY, nil) == SQLITE_OK, let db = handle else {
+        guard sqlite3_open_v2(path, &handle, SQLITE_OPEN_READONLY, nil) == SQLITE_OK, let db = handle else {
             if let handle { sqlite3_close(handle) }
             throw StoreError(description: "Cannot open Antinote's database read-only. Run `antinote-mcp grant` again.")
         }

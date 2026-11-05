@@ -53,37 +53,43 @@ Requires macOS 14+, Antinote, and the Xcode Command Line Tools (`xcode-select --
 
 ```bash
 git clone https://github.com/bt-vdla/antinote-mcp.git
-cd antinote-mcp
-./build.sh
 ```
 
-Grant read access once. A folder picker opens on Antinote's data folder; click **Allow Read Access**. Run this again after each rebuild, because a new ad-hoc signature can invalidate the saved permission.
+```bash
+cd antinote-mcp && ./install.sh
+```
+
+`install.sh` builds the app and asks for folder access; the picker only opens if access is missing, so click **Allow Read Access**. It then registers the server with Claude Code for all your projects and asks whether to add it to the Claude Desktop chat app as well. Pass `--desktop` or `--no-desktop` to skip that question. Run it again at any time, for example after `git pull`; it's safe to repeat.
+
+### What's automatic
+
+| You might worry about… | What happens |
+|---|---|
+| Rebuilding | Folder access survives rebuilds (tested). |
+| Folder access getting lost | The server notices on its next tool call, opens the folder picker itself, and carries on once you approve. |
+| Antinote not running | The server launches it in the background (hidden) before any write. Reads don't need it. |
+| Removing it | `./uninstall.sh` unregisters it from Claude Code and Claude Desktop. `./uninstall.sh --purge` also deletes the build, the saved permission and the edit journal. Your notes are never touched. |
+
+<details><summary>Manual setup (what install.sh does)</summary>
+
+```bash
+./build.sh
+```
 
 ```bash
 build/AntinoteMCP.app/Contents/MacOS/antinote-mcp grant
 ```
 
 ```bash
-build/AntinoteMCP.app/Contents/MacOS/antinote-mcp status
-```
-
-**Claude Code:**
-
-```bash
 claude mcp add antinote -s user -- "$PWD/build/AntinoteMCP.app/Contents/MacOS/antinote-mcp"
 ```
 
-**Claude Desktop.** Add this to `~/Library/Application Support/Claude/claude_desktop_config.json`, using your absolute path:
+For Claude Desktop, add this to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
-{
-  "mcpServers": {
-    "antinote": { "command": "/absolute/path/to/antinote-mcp/build/AntinoteMCP.app/Contents/MacOS/antinote-mcp" }
-  }
-}
+{ "mcpServers": { "antinote": { "command": "/absolute/path/to/antinote-mcp/build/AntinoteMCP.app/Contents/MacOS/antinote-mcp" } } }
 ```
-
-Antinote must be running for writes. Reads work whenever the database exists.
+</details>
 
 ## Testing
 

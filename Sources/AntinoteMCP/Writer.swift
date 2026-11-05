@@ -16,7 +16,32 @@ enum AntinoteURL {
         return s
     }
 
+    static let bundleID = "com.chabomakers.Antinote"
+
+    /// Launch Antinote in the background if it isn't running, and give it time to become ready for URLs.
+    static func ensureRunning() throws {
+        if !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty { return }
+        guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
+            throw WriteError(description: "Antinote isn't installed.")
+        }
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = false
+        config.hides = true
+        let done = DispatchSemaphore(value: 0)
+        NSWorkspace.shared.openApplication(at: appURL, configuration: config) { _, _ in done.signal() }
+        _ = done.wait(timeout: .now() + 15)
+        let deadline = Date().addingTimeInterval(15)
+        while NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty && Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.3)
+        }
+        guard !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty else {
+            throw WriteError(description: "Couldn't start Antinote. Open it manually and retry.")
+        }
+        Thread.sleep(forTimeInterval: 3)  // let it load notes before it handles URL actions
+    }
+
     static func open(_ action: String, _ params: [(String, String)] = []) throws {
+        try ensureRunning()
         let s = build(action, params)
         guard s.count <= maxEncodedLength else { throw WriteError(description: "Note too large for Antinote's URL interface (~30 KB encoded).") }
         guard let url = URL(string: s) else { throw WriteError(description: "Could not build Antinote URL.") }
